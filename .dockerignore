@@ -1,0 +1,11 @@
+# -*- conf -*-
+#
+# things here are *not* copied into the dockerfile when [re]building;
+# this is useful if those are used to drive the process but not part
+# of it directly because it won't interfere with the layer caching
+
+.*
+*~
+Dockerfile
+Makefile
+kubernetes-entrypoint
