@@ -18,6 +18,11 @@ import (
 )
 
 func main() {
+	if len(os.Getenv("ENTRYPOINT_DEBUG_LOAD")) > 1 {
+		logger.Info.Printf("loaded...")
+		os.Exit(0)
+	}
+
 	var comm []string
 	var entrypoint *entry.Entrypoint
 	var err error

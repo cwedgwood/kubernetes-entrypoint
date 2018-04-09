@@ -1,35 +1,19 @@
-REPO_URI ?= github.com/stackanetes
-REPO_PATH ?= $(REPO_URI)/kubernetes-entrypoint
 
-prepare:
-	@echo "Preapre GOPATH"
-	test -h gopath/src/$(REPO_PATH) || \
-		( mkdir -p gopath/src/$(REPO_URI); \
-		ln -s ../../../.. gopath/src/$(REPO_PATH) )
+target=quay.io/cw/kubernetes-entrypoint:v0.3.0c
 
-build: prepare
-	@echo "Building kubernetes-entrypoint for $(GOOS)/$(GOARCH) $(GOPATH)"
-	mkdir -p bin/$(GOARCH)
-	go build -o bin/$(GOARCH)/kubernetes_entrypoint
+default: runtest
 
-linux-arm64:
-	export GOOS="linux"; \
-	export GOARCH="arm64"; \
-	export GOPATH="$(PWD)/gopath"; \
-	$(MAKE) build
+container:
+	rm -f kubernetes-entrypoint *~
+	sudo docker build -t $(target) . | cat
+	sudo docker images $(target)
 
-linux-amd64:
-	export GOOS="linux"; \
-	export GOARCH="amd64"; \
-	export GOPATH="$(PWD)/gopath"; \
-	$(MAKE) build
+runtest: container
+	sudo docker run --rm -e ENTRYPOINT_DEBUG_LOAD=true $(target) 2>&1
+
+push: container
+	sudo docker push $(target) | cat
+
 
 clean:
-	rm -rf gopath
-	rm -rf bin
-
-test: prepare
-	export GOPATH="$(PWD)/gopath"; \
-	go test
-
-all: linux-amd64 linux-arm64
+	rm -f *~
