@@ -1,6 +1,6 @@
 # -*- conf -*-
 
-FROM cwedgwood/bldr:0.01g
+FROM cwedgwood/bldr:0.03
 
 # put the src into the container and build it
 RUN mkdir -p /build/
