@@ -18,6 +18,7 @@ import (
 )
 
 func main() {
+	// Used to verify we've built a (potentially) working container without having to deploy in a full Kubernetes environment
 	if len(os.Getenv("ENTRYPOINT_DEBUG_LOAD")) > 1 {
 		logger.Info.Printf("loaded...")
 		os.Exit(0)
