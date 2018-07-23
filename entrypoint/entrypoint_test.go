@@ -16,7 +16,7 @@ import (
 const (
 	testNamespace     = "test"
 	dummyResolverName = "dummy"
-	loggerInfoText    = "Entrypoint INFO: "
+	loggerInfoText    = "INFO: "
 )
 
 var testEntrypoint EntrypointInterface
