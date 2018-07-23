@@ -12,12 +12,14 @@ import (
 var dependencies []Resolver // List containing all dependencies to be resolved
 const (
 	//DependencyPrefix is a prefix for env variables
-	DependencyPrefix      = "DEPENDENCY_"
-	JsonSuffix            = "_JSON"
-	resolverSleepInterval = 2
+	DependencyPrefix             = "DEPENDENCY_"
+	JsonSuffix                   = "_JSON"
+	initialResolverSleepInterval = 1
+	resolverSleepIntervalBackoff = 2
+	resolverSleepIntervalCap     = 10
 )
 
-//Resolver is an interface which all dependencies should implement
+// Resolver is an interface which all dependencies should implement
 type Resolver interface {
 	IsResolved(entrypoint EntrypointInterface) (bool, error)
 }
@@ -33,7 +35,7 @@ type Entrypoint struct {
 	namespace string
 }
 
-//Register is a function which registers new dependencies
+// Register is a function which registers new dependencies
 func Register(res Resolver) {
 	if res == nil {
 		panic("Entrypoint: could not register nil Resolver")
@@ -56,7 +58,7 @@ func (e Entrypoint) Client() (client cli.ClientInterface) {
 	return e.client
 }
 
-//Resolve is a main loop which iterates through all dependencies and resolves them
+// Resolve is a main loop which iterates through all dependencies and resolves them
 func (e Entrypoint) Resolve() {
 	var wg sync.WaitGroup
 	for _, dep := range dependencies {
@@ -65,17 +67,20 @@ func (e Entrypoint) Resolve() {
 			defer wg.Done()
 			logger.Info.Printf("Resolving %v", dep)
 			var err error
+			delayTime := time.Duration(initialResolverSleepInterval)
 			status := false
 			for status == false {
 				if status, err = dep.IsResolved(e); err != nil {
-					logger.Warning.Printf("Resolving dependency %s failed: %v .", dep, err)
+					logger.Warning.Printf("Resolving dependency %s failed: %v.", dep, err)
 				}
-				time.Sleep(resolverSleepInterval * time.Second)
+				time.Sleep(delayTime * time.Second)
+				delayTime *= resolverSleepIntervalBackoff
+				if delayTime > resolverSleepIntervalCap {
+					delayTime = resolverSleepIntervalCap
+				}
 			}
 			logger.Info.Printf("Dependency %v is resolved.", dep)
-
 		}(dep)
 	}
 	wg.Wait()
-
 }
