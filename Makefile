@@ -1,5 +1,5 @@
 
-target=quay.io/cw/kubernetes-entrypoint:v0.3.1d
+target=quay.io/cw/kubernetes-entrypoint:v0.3.1e
 
 default: runtest
 
